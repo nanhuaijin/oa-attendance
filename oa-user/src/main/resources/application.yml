@@ -1,0 +1,22 @@
+server:
+  port: 8020
+
+spring:
+  application:
+    name: user-service
+  profiles:
+    active: dev
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/oa_attendance?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    username: root
+    password: breeze1314520.
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:com/ccloud/oa/user/mapper/xml/*.xml
+  global-config:
+    db-config:
+      id-type: auto
