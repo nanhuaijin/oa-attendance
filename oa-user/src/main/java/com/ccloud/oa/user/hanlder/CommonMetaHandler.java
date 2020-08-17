@@ -1,4 +1,4 @@
-package com.ccloud.oa.common.handler;
+package com.ccloud.oa.user.hanlder;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import lombok.extern.slf4j.Slf4j;

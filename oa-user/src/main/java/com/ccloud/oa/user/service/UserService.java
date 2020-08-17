@@ -2,6 +2,7 @@ package com.ccloud.oa.user.service;
 
 import com.ccloud.oa.user.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ccloud.oa.user.vo.UserVO;
 
 /**
  * <p>
@@ -15,5 +16,9 @@ public interface UserService extends IService<User> {
 
     User login(User user);
 
-    int register(User user);
+    User register(UserVO userVO);
+
+    User getInfo();
+
+    User checkUsernameExists(String username);
 }
