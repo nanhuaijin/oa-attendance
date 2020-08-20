@@ -23,13 +23,14 @@ public enum ResultCodeEnum {
     ACCOUNT_REGISTER_SUCCESS(20000, "员工账号注册成功"),
     ACCOUNT_LOGOUT_SUCCESS(20000, "退出登录成功"),
 
-    ACCOUNT_OR_PASSWORD_ERROR(41000, "账号或密码错误"),
-    PASSWORD_CHECK_SAME_ERROR(41001, "两次密码不一致"),
-    USERNAME_ALREADY_EXISTS_ERROR(41002, "用户名已存在"),
-    ACCOUNT_REGISTER_ERROR(41003, "账号注册失败，请稍后尝试"),
+    ACCOUNT_NOT_EXISTS_ERROR(41000, "该用户不存在"),
+    ACCOUNT_OR_PASSWORD_ERROR(41001, "账号或密码错误"),
+    PASSWORD_CHECK_SAME_ERROR(41002, "两次密码不一致"),
+    USERNAME_ALREADY_EXISTS_ERROR(41003, "用户名已存在"),
+    ACCOUNT_REGISTER_ERROR(41004, "账号注册失败，请稍后尝试"),
 
-    SAVE_ORDER_ERROR(40002, "保存订单信息失败"),
-    ORDER_PAY_ERROR(40003, "订单支付失败");
+    REPEAT_PUNCH_CLOCK(42000, "请不要重复打卡"),
+    PUNCH_CLOCK_LOWER_ERROR(42001, "请先进行上班打卡");
 
     private Integer code;
 

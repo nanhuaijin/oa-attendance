@@ -25,7 +25,7 @@ public class CodeGenerator {
     @Test
     public void genCode() {
 
-        String moduleName = "user";
+        String moduleName = "role";
 
         // 1、创建代码生成器
         AutoGenerator mpg = new AutoGenerator();
@@ -49,7 +49,7 @@ public class CodeGenerator {
         dsc.setUrl("jdbc:mysql://localhost:3306/oa_attendance");
         dsc.setDriverName("com.mysql.jdbc.Driver");
         dsc.setUsername("root");
-        dsc.setPassword("breeze1314520.");
+        dsc.setPassword("123456");
         dsc.setDbType(DbType.MYSQL);
         mpg.setDataSource(dsc);
 

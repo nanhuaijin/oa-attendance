@@ -3,14 +3,19 @@ package com.ccloud.oa.user.controller;
 
 import com.ccloud.oa.common.result.BaseResponse;
 import com.ccloud.oa.common.result.ResultCodeEnum;
+import com.ccloud.oa.user.entity.Attendance;
 import com.ccloud.oa.user.entity.User;
 import com.ccloud.oa.user.service.UserService;
-import com.ccloud.oa.user.vo.UserVO;
+import com.ccloud.oa.user.vo.LoginVO;
+import com.ccloud.oa.user.vo.RegisterVO;
+import com.ccloud.oa.user.vo.UserInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -28,41 +33,78 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @ApiOperation("校验用户名是否存在")
-    @PostMapping("/check/username")
-    public BaseResponse checkUsernameExists(
-            @ApiParam(name = "username", value = "员工名", required = true)
-            String username) {
-        User user = this.userService.checkUsernameExists(username);
-        if (user == null) {
-            return BaseResponse.setResult(ResultCodeEnum.USERNAME_ALREADY_EXISTS_ERROR);
-        } else {
-            return BaseResponse.setResult(ResultCodeEnum.SUCCESS);
-        }
+    @ApiOperation("员工用户登录")
+    @PostMapping("/login")
+    public BaseResponse login(
+            @ApiParam(name = "loginVO", value = "登录页面VO对象", required = true)
+            @RequestBody LoginVO loginVO) {
+
+        UserInfo userInfo = this.userService.login(loginVO);
+
+        return BaseResponse.setResult(ResultCodeEnum.ACCOUNT_LOGIN_SUCCESS).data("userInfo", userInfo);
     }
 
     @ApiOperation("员工用户注册")
     @PostMapping("/register")
     public BaseResponse register(
             @ApiParam(name = "user", value = "员工用户对象", required = true)
-            @RequestBody UserVO userVO) {
-        User user = this.userService.register(userVO);
-        if (user == null) {
+            @RequestBody RegisterVO registerVO) {
+        UserInfo userInfo = this.userService.register(registerVO);
+        if (userInfo == null) {
             return BaseResponse.setResult(ResultCodeEnum.ACCOUNT_REGISTER_ERROR);
         } else {
-            return BaseResponse.setResult(ResultCodeEnum.ACCOUNT_REGISTER_SUCCESS).data("user", user);
+            return BaseResponse.setResult(ResultCodeEnum.ACCOUNT_REGISTER_SUCCESS).data("userInfo", userInfo);
         }
     }
 
-    @ApiOperation("员工用户登录")
-    @PostMapping("/login")
-    public BaseResponse login(
-            @ApiParam(name = "loginUser", value = "员工用户对象", required = true)
-            @RequestBody User loginUser) {
+    @ApiOperation("校验用户名是否存在")
+    @GetMapping("/check/account")
+    public BaseResponse checkAccountExist(
+            @ApiParam(name = "account", value = "用户账号", required = true)
+            @RequestParam("account") String account) {
+        User user = this.userService.checkAccountExist(account);
+        if (user == null) {
+            return BaseResponse.setResult(ResultCodeEnum.SUCCESS);
+        } else {
+            return BaseResponse.setResult(ResultCodeEnum.USERNAME_ALREADY_EXISTS_ERROR);
+        }
+    }
 
-        User user = this.userService.login(loginUser);
+    @ApiOperation("上班打卡接口")
+    @GetMapping("/punchClock/up")
+    public BaseResponse punchClockUp(
+            @ApiParam(name = "account", value = "用户账号", required = true)
+            @RequestParam("account") String account,
+            @ApiParam(name = "address", value = "打卡地点", required = true)
+            @RequestParam("address") String address) {
+        Attendance attendance = this.userService.punchClockUp(account, address);
 
-        return BaseResponse.setResult(ResultCodeEnum.ACCOUNT_LOGIN_SUCCESS).data("user", user);
+        return BaseResponse.success().data("attendance", attendance).message("打卡成功");
+    }
+
+    @ApiOperation("下班打卡接口")
+    @GetMapping("/punchClock/lower")
+    public BaseResponse punchClockLower(
+            @ApiParam(name = "account", value = "用户账号", required = true)
+            @RequestParam("account") String account,
+            @ApiParam(name = "address", value = "打卡地点", required = true)
+            @RequestParam("address") String address,
+            @ApiParam(name = "type", value = "0-正常打卡 1-提前打卡", required = true)
+            @RequestParam("type") Integer type) {
+
+        if (type == 0) {
+            //先判断是否是下班时间
+            //获取当天的17点30 2020-08-20T17:30:00
+            LocalDateTime localDateTime = LocalDateTime.now().withHour(17).withMinute(30).withSecond(0).withNano(0);
+            LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+            if (now.isBefore(localDateTime)) {
+                return BaseResponse.success();
+            }
+        }
+
+        Attendance attendance = this.userService.punchClockLower(account, address);
+
+        return BaseResponse.success().data("attendance", attendance).message("打卡成功");
     }
 
     @ApiOperation("获取员工信息")

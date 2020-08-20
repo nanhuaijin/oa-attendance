@@ -1,8 +1,11 @@
 package com.ccloud.oa.user.service;
 
+import com.ccloud.oa.user.entity.Attendance;
 import com.ccloud.oa.user.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ccloud.oa.user.vo.UserVO;
+import com.ccloud.oa.user.vo.LoginVO;
+import com.ccloud.oa.user.vo.RegisterVO;
+import com.ccloud.oa.user.vo.UserInfo;
 
 /**
  * <p>
@@ -14,11 +17,15 @@ import com.ccloud.oa.user.vo.UserVO;
  */
 public interface UserService extends IService<User> {
 
-    User login(User user);
+    UserInfo login(LoginVO loginVO);
 
-    User register(UserVO userVO);
+    UserInfo register(RegisterVO registerVO);
 
     User getInfo();
 
-    User checkUsernameExists(String username);
+    User checkAccountExist(String username);
+
+    Attendance punchClockUp(String account, String address);
+
+    Attendance punchClockLower(String account, String address);
 }
