@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -68,6 +69,32 @@ public class UserController {
         } else {
             return BaseResponse.setResult(ResultCodeEnum.USERNAME_ALREADY_EXISTS_ERROR);
         }
+    }
+
+    @ApiOperation("获取当前登录人本月打卡记录")
+    @GetMapping("/list/calendar/data")
+    public BaseResponse listCalendarDataByAccount(
+            @ApiParam(name = "account", value = "用户账号", required = true)
+            @RequestParam("account") String account) {
+        List<Attendance> attendanceList = this.userService.listCalendarDataByAccount(account);
+
+        return BaseResponse.success().data("list", attendanceList).message("获取当前登录人本月打卡记录成功");
+    }
+
+    @ApiOperation("获取当前登录人具体一天的打卡信息")
+    @GetMapping("/get/calendar/data/day")
+    public BaseResponse getCalendarDataByDay(
+            @ApiParam(name = "account", value = "用户账号", required = true)
+            @RequestParam("account") String account,
+            @ApiParam(name = "year", value = "年", required = true)
+            @RequestParam("year") Integer year,
+            @ApiParam(name = "month", value = "月", required = true)
+            @RequestParam("month") Integer month,
+            @ApiParam(name = "day", value = "日", required = true)
+            @RequestParam("day") Integer day) {
+        Attendance attendance = this.userService.getCalendarDataByDay(account, year, month, day);
+
+        return BaseResponse.success().data("attendance", attendance).message("获取某天打卡信息成功");
     }
 
     @ApiOperation("上班打卡接口")

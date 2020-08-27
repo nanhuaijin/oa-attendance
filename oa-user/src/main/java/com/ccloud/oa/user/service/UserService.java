@@ -7,6 +7,8 @@ import com.ccloud.oa.user.vo.LoginVO;
 import com.ccloud.oa.user.vo.RegisterVO;
 import com.ccloud.oa.user.vo.UserInfo;
 
+import java.util.List;
+
 /**
  * <p>
  * 员工表 服务类
@@ -28,4 +30,8 @@ public interface UserService extends IService<User> {
     Attendance punchClockUp(String account, String address);
 
     Attendance punchClockLower(String account, String address);
+
+    List<Attendance> listCalendarDataByAccount(String account);
+
+    Attendance getCalendarDataByDay(String account, Integer year, Integer month, Integer day);
 }

@@ -23,9 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.text.ParseException;
+import java.time.*;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -171,6 +172,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
+     * 获取当前登录人本月打卡记录
+     * @param account
+     * @return
+     */
+    @Override
+    public List<Attendance> listCalendarDataByAccount(String account) {
+
+        //获取当前月份
+        int month = LocalDateTime.now().getMonthValue();
+
+        QueryWrapper<Attendance> wrapper = new QueryWrapper<>();
+        wrapper.eq("account", account);
+        wrapper.eq("month", month);
+        return this.attendanceMapper.selectList(wrapper);
+    }
+
+    /**
+     * 获取当前登录人具体一天的打卡信息
+     * @param account
+     * @param year
+     * @param month
+     * @param day
+     * @return
+     */
+    @Override
+    public Attendance getCalendarDataByDay(String account, Integer year, Integer month, Integer day) {
+        QueryWrapper<Attendance> wrapper = new QueryWrapper<>();
+        wrapper.eq("year", year);
+        wrapper.eq("month", month);
+        wrapper.eq("day", day);
+        wrapper.eq("account", account);
+        return this.attendanceMapper.selectOne(wrapper);
+    }
+
+    /**
      * 上班打卡
      * @param account
      * @param address
@@ -180,11 +216,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public Attendance punchClockUp(String account, String address) {
 
         //先查询数据库中有没有当天的打卡记录
+        //数据库是按照年月日时间分开保存，只要当天的打卡记录不存在即可
         QueryWrapper<Attendance> wrapper = new QueryWrapper<>();
-        String startTime = DateUtil.getTodayStartTime();
-        String endTime = DateUtil.getTodayEndTime();
-        wrapper.ge("up_time", startTime); //大于等于
-        wrapper.le("up_time", endTime); //小于等于
+        LocalDateTime now = LocalDateTime.now().withNano(0);
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        wrapper.eq("year", year);
+        wrapper.eq("month", month);
+        wrapper.eq("day", day);
         wrapper.eq("account", account);
         Attendance attendance = this.attendanceMapper.selectOne(wrapper);
         if (attendance != null) {
@@ -194,7 +234,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //先判断是否迟到
         //获取当天的9点05 2020-08-20T09:05:00
         LocalDateTime localDateTime = LocalDateTime.now().withHour(9).withMinute(5).withSecond(0).withNano(0);
-        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
 
         attendance = new Attendance();
         //数据库默认状态是0，未迟到，所以只有迟到才设置状态
@@ -203,8 +242,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         attendance.setAccount(account);
-        attendance.setAddressUp(address);
-        attendance.setUpTime(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()));
+        attendance.setAddressStart(address);
+        attendance.setYear(year);
+        Instant instant = now.toInstant(ZoneOffset.of("+8"));
+        attendance.setStart(Date.from(instant));
+        attendance.setMonth(month);
+        attendance.setDay(day);
+
         //保存
         this.attendanceMapper.insert(attendance);
 
@@ -220,20 +264,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Attendance punchClockLower(String account, String address) {
 
-        //先查询数据库中有没有当天的打卡记录
+        //先查询数据库中有没有当天的打卡记录，这里下班打卡只包含当天的，超过当天没打卡算漏卡
         QueryWrapper<Attendance> wrapper = new QueryWrapper<>();
-        String startTime = DateUtil.getTodayStartTime();
-        String endTime = DateUtil.getTodayEndTime();
-        wrapper.ge("up_time", startTime); //大于等于
-        wrapper.le("up_time", endTime); //小于等于
+        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int day = now.getDayOfMonth();
+        wrapper.eq("year", year);
+        wrapper.eq("month", month);
+        wrapper.eq("day", day);
         wrapper.eq("account", account);
         Attendance attendance = this.attendanceMapper.selectOne(wrapper);
         if (attendance == null) {
             throw new ApplicationException(ResultCodeEnum.PUNCH_CLOCK_LOWER_ERROR);
         }
 
-        attendance.setLowerTime(new Date());
-        attendance.setAddressLower(address);
+        attendance.setEnd(new Date());
+        attendance.setAddressEnd(address);
+        try {
+            //计算当天工作时常
+            double hours = DateUtil.differHours(attendance.getStart(), attendance.getEnd());
+            attendance.setHours(hours);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         this.attendanceMapper.updateById(attendance);
 
         return attendance;

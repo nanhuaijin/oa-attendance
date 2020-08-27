@@ -508,13 +508,30 @@ public class DateUtil {
      * @param date2
      * @return
      */
-    public static int differeDays(Date date1, Date date2) {
+    public static int differDays(Date date1, Date date2) {
         SimpleDateFormat df = new SimpleDateFormat(DATETIME_FORMAT_START);
         date1 = DateUtil.format(df.format(date1));
         date2 = DateUtil.format(df.format(date2));
         int days = (int) ((date2.getTime() - date1.getTime()) / (1000 * 3600 * 24));
         return days;
+    }
 
+    /**
+     * 比较两个时间相差多少小时 - 当天的
+     * @param startTime
+     * @param endTime
+     * @return
+     * @throws ParseException
+     */
+    public static double differHours(Date startTime, Date endTime) throws ParseException {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+        String startFormat = simpleDateFormat.format(startTime);
+        String endFormat = simpleDateFormat.format(endTime);
+
+        Date start = simpleDateFormat.parse(startFormat);
+        Date end = simpleDateFormat.parse(endFormat);
+        double hours = (double) (end.getTime() - start.getTime()) / (1000 * 3600);
+        return Math.floor(hours*10)/10;
     }
 
     /**
