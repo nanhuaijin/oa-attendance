@@ -27,13 +27,5 @@ public interface UserService extends IService<User> {
 
     User checkAccountExist(String username);
 
-    Attendance punchClockUp(String account, String address);
-
-    Attendance punchClockLower(String account, String address);
-
-    List<Attendance> listCalendarDataByAccount(String account);
-
-    Attendance getCalendarDataByDay(String account, Integer year, Integer month, Integer day);
-
     String sendSms(String phone);
 }

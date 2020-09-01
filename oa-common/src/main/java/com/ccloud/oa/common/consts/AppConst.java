@@ -18,4 +18,8 @@ public interface AppConst {
      * 每个手机每天最多发送3条短信
      */
     Integer SMS_CODE_MAX_COUNT = 3;
+    /**
+     * 注册用户默认头像地址
+     */
+    String DEFAULT_AVATAR_URL = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif";
 }
