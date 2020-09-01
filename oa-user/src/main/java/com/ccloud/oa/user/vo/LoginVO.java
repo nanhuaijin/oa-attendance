@@ -16,6 +16,10 @@ public class LoginVO {
     @ApiModelProperty("账号")
     private String account;
 
+    @ApiModelProperty("手机号")
+    private String phone;
+
     @ApiModelProperty("密码")
     private String password;
+
 }

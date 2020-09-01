@@ -15,10 +15,9 @@ import lombok.EqualsAndHashCode;
 @ApiModel("注册页面VO对象")
 public class RegisterVO extends LoginVO{
 
-    @ApiModelProperty(value = "重复输入的密码")
+    @ApiModelProperty("重复输入的密码")
     private String passwordAgain;
 
-    @ApiModelProperty(value = "手机号码")
-    private String phone;
-
+    @ApiModelProperty("验证码")
+    private String code;
 }

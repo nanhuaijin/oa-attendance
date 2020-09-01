@@ -58,6 +58,15 @@ public class UserController {
         }
     }
 
+    @ApiOperation("发送短信验证码")
+    @GetMapping("/sms")
+    public BaseResponse sendSms(
+            @ApiParam(name = "phone", value = "手机号码", required = true)
+            @RequestParam("phone") String phone) {
+        String message = this.userService.sendSms(phone);
+        return BaseResponse.success().message(message);
+    }
+
     @ApiOperation("校验用户名是否存在")
     @GetMapping("/check/account")
     public BaseResponse checkAccountExist(

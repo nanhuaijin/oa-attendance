@@ -17,6 +17,13 @@ spring:
   jackson: #全局统一日期格式返回
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  rabbitmq:
+    host: 127.0.0.1
+    username: oa
+    password: root
+    virtual-host: /oa
+  redis:
+    host: localhost
 
 mybatis-plus:
   configuration:

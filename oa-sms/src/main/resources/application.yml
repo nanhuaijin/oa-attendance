@@ -1,0 +1,22 @@
+server:
+  port: 8030
+
+spring:
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+  rabbitmq:
+    host: 127.0.0.1
+    username: oa
+    password: root
+    virtual-host: /oa
+  redis:
+    host: localhost
+
+sms:
+  accessKeyId:
+  accessSecret:
+
