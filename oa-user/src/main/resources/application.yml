@@ -2,10 +2,12 @@ server:
   port: 8020
 
 spring:
-  application:
-    name: user-service
   profiles:
     active: dev
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver

@@ -795,13 +795,4 @@ public class DateUtil {
         }
     }
 
-
-    public static void main(String[] args) {
-        Date fin = format(DATETIME_FORMAT, "2019-07-30 19:50:22");
-        Date test = new Date(1552924800000L);
-        System.out.println(getFisrtDayOfMonth("201907"));
-        System.out.println(getLastDayOfMonth("201907"));
-        System.out.println(isLastDayOfMonth(fin));
-    }
-
 }
