@@ -16,6 +16,7 @@ import com.ccloud.oa.user.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ccloud.oa.user.vo.LoginVO;
 import com.ccloud.oa.user.vo.RegisterVO;
+import com.ccloud.oa.user.vo.UpdatePasswordVO;
 import com.ccloud.oa.user.vo.UserInfo;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.BeanUtils;
@@ -257,12 +258,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         UserInfo userInfo = new UserInfo();
         BeanUtils.copyProperties(user, userInfo);
 
-        //生成表单提交唯一标识
-        String updateToken = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6);
+        //生成表单提交唯一标识 - 防止重复提交
+        String updateToken = this.getToken(account);
         userInfo.setUpdateToken(updateToken);
-        this.redisTemplate.opsForValue().set(AppConst.UPDATE_TOKEN+account, updateToken, 30, TimeUnit.MINUTES);
 
         return userInfo;
+    }
+
+    /**
+     * 生成表单提交唯一标识 - 防止重复提交
+     * @param account
+     * @return
+     */
+    private String getToken(String account) {
+        String updateToken = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6);
+        this.redisTemplate.opsForValue().set(AppConst.UPDATE_TOKEN + account, updateToken, 30, TimeUnit.MINUTES);
+        return updateToken;
     }
 
     /**
@@ -274,14 +285,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public int updateUserByAccount(UserInfo userInfo) {
 
         //校验token
-        String token = this.redisTemplate.opsForValue().get(AppConst.UPDATE_TOKEN + userInfo.getAccount());
-        String updateToken = userInfo.getUpdateToken();
-        if (StringUtils.isEmpty(updateToken) || StringUtils.isEmpty(token) || !updateToken.equals(token)) {
-            throw new ApplicationException(ResultCodeEnum.UPDATE_TOKEN_EQUALS_ERROR);
-        }
-
-        //删除token
-        this.redisTemplate.delete(AppConst.UPDATE_TOKEN + userInfo.getAccount());
+        String account = userInfo.getAccount();
+        this.checkToken(userInfo.getUpdateToken(), account);
 
         //校验邮箱格式是否正确
         boolean flag = AppUtils.isEmail(userInfo.getEmail());
@@ -300,5 +305,77 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         BeanUtils.copyProperties(userInfo, user);
 
         return this.baseMapper.update(user, wrapper);
+    }
+
+    /**
+     * 校验token - 并删除token
+     * @param updateToken
+     * @param account
+     */
+    private void checkToken(String updateToken, String account) {
+        String token = this.redisTemplate.opsForValue().get(AppConst.UPDATE_TOKEN + account);
+        if (StringUtils.isEmpty(updateToken) || StringUtils.isEmpty(token) || !updateToken.equals(token)) {
+            throw new ApplicationException(ResultCodeEnum.UPDATE_TOKEN_EQUALS_ERROR);
+        }
+
+        //删除token
+        this.redisTemplate.delete(AppConst.UPDATE_TOKEN + account);
+    }
+
+    /**
+     * 更新密码 - 一天只能更改一次
+     * @param passwordVO
+     * @return
+     */
+    @Override
+    public int updatePasswordByAccount(UpdatePasswordVO passwordVO) {
+
+        //获取redis中更改密码的次数
+        String account = passwordVO.getAccount();
+        String count = this.redisTemplate.opsForValue().get(AppConst.UPDATE_PASSWORD_EVERY_DAY + account);
+        if (!StringUtils.isEmpty(count)) {
+            throw new ApplicationException(ResultCodeEnum.UPDATE_PASSWORD_EXPIRE_ERROR);
+        }
+
+        //根据用户名或者手机号查询用户
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("account", account);
+        wrapper.or().eq("phone", passwordVO.getAccount());
+        User user = this.baseMapper.selectOne(wrapper);
+
+        //该用户不存在
+        if (user == null) {
+            throw new ApplicationException(ResultCodeEnum.ACCOUNT_NOT_EXISTS_ERROR);
+        }
+
+        //获取盐
+        String salt = user.getSalt();
+        String password = user.getPassword();
+
+        String oldPassword = passwordVO.getPassword();
+        String md5Password = new String(DigestUtils.md5Digest(oldPassword.getBytes()));
+        String passwordSalt = DigestUtils.appendMd5DigestAsHex(salt.getBytes(), new StringBuilder(md5Password)).toString();
+
+        //密码错误
+        if (!password.equals(passwordSalt)) {
+            throw new ApplicationException(ResultCodeEnum.CHECK_PASSWORD_ERROR);
+        }
+
+        //更新密码
+        //更改随机盐
+        salt = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
+        //先给新密码加密
+        String newPassword = new String(DigestUtils.md5Digest(passwordVO.getNewPassword().getBytes()));
+        //加入盐并加密
+        StringBuilder passwordMd5 = DigestUtils.appendMd5DigestAsHex(salt.getBytes(), new StringBuilder(newPassword));
+        user.setPassword(passwordMd5.toString());
+        user.setSalt(salt);
+        int i = this.baseMapper.updateById(user);
+
+        //将更改密码的账号存入redis
+        this.redisTemplate.opsForValue().set(AppConst.UPDATE_PASSWORD_EVERY_DAY + account, account,
+                AppConst.UPDATE_PASSWORD_EXPIRE_TIME, TimeUnit.DAYS);
+
+        return i;
     }
 }

@@ -7,6 +7,7 @@ import com.ccloud.oa.user.entity.User;
 import com.ccloud.oa.user.service.UserService;
 import com.ccloud.oa.user.vo.LoginVO;
 import com.ccloud.oa.user.vo.RegisterVO;
+import com.ccloud.oa.user.vo.UpdatePasswordVO;
 import com.ccloud.oa.user.vo.UserInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -88,7 +89,7 @@ public class UserController {
     }
 
     @ApiOperation("更新员工信息")
-    @PostMapping("/update")
+    @PostMapping("/update/user")
     public BaseResponse updateUserByAccount(
             @ApiParam(name = "user", value = "用户对象", required = true)
             @RequestBody UserInfo userInfo) {
@@ -99,6 +100,21 @@ public class UserController {
             return BaseResponse.success().message("更新用户信息成功");
         } else {
             return BaseResponse.setResult(ResultCodeEnum.UPDATE_USER_INFO_ERROR);
+        }
+    }
+
+    @ApiOperation("更新密码")
+    @PostMapping("/update/password")
+    public BaseResponse updatePasswordByAccount(
+            @ApiParam(name = "passwordVO", value = "更新密码VO", required = true)
+            @RequestBody UpdatePasswordVO passwordVO) {
+
+        int count = this.userService.updatePasswordByAccount(passwordVO);
+
+        if (count == 1) {
+            return BaseResponse.success().message("更新密码成功");
+        } else {
+            return BaseResponse.error().message("更新密码失败");
         }
     }
 

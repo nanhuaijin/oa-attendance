@@ -5,6 +5,7 @@ import com.ccloud.oa.user.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ccloud.oa.user.vo.LoginVO;
 import com.ccloud.oa.user.vo.RegisterVO;
+import com.ccloud.oa.user.vo.UpdatePasswordVO;
 import com.ccloud.oa.user.vo.UserInfo;
 
 import java.util.List;
@@ -30,4 +31,6 @@ public interface UserService extends IService<User> {
     String sendSms(String phone);
 
     int updateUserByAccount(UserInfo userInfo);
+
+    int updatePasswordByAccount(UpdatePasswordVO passwordVO);
 }

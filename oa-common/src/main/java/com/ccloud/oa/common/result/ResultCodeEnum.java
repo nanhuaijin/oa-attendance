@@ -38,6 +38,8 @@ public enum ResultCodeEnum {
     UPDATE_USER_INFO_ERROR(41010, "更新用户信息失败"),
     EMAIL_FORMAT_ERROR(41011, "邮箱格式不正确"),
     UPDATE_TOKEN_EQUALS_ERROR(41012, "表单Token校验失败，请刷新重试"),
+    CHECK_PASSWORD_ERROR(41013, "密码验证失败，请重新输入"),
+    UPDATE_PASSWORD_EXPIRE_ERROR(41014, "每天只能修改一次密码"),
 
 
     REPEAT_PUNCH_CLOCK(42000, "请不要重复打卡"),
