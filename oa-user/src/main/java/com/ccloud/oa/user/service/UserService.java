@@ -1,14 +1,8 @@
 package com.ccloud.oa.user.service;
 
-import com.ccloud.oa.user.entity.Attendance;
 import com.ccloud.oa.user.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ccloud.oa.user.vo.LoginVO;
-import com.ccloud.oa.user.vo.RegisterVO;
-import com.ccloud.oa.user.vo.UpdatePasswordVO;
-import com.ccloud.oa.user.vo.UserInfo;
-
-import java.util.List;
+import com.ccloud.oa.user.vo.*;
 
 /**
  * <p>
@@ -28,9 +22,13 @@ public interface UserService extends IService<User> {
 
     User checkAccountExist(String username);
 
-    String sendSms(String phone);
+    String sendSms(String phone, Integer type);
 
     int updateUserByAccount(UserInfo userInfo);
 
-    int updatePasswordByAccount(UpdatePasswordVO passwordVO);
+    int updatePasswordByAccount(PasswordVO passwordVO);
+
+    int bingingPhoneByAccount(PhoneVO phoneVO);
+
+    int updatePhoneByAccount(PhoneVO phoneVO);
 }

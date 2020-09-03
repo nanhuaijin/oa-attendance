@@ -14,10 +14,7 @@ import com.ccloud.oa.user.mapper.UserMapper;
 import com.ccloud.oa.user.service.AvatarService;
 import com.ccloud.oa.user.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ccloud.oa.user.vo.LoginVO;
-import com.ccloud.oa.user.vo.RegisterVO;
-import com.ccloud.oa.user.vo.UpdatePasswordVO;
-import com.ccloud.oa.user.vo.UserInfo;
+import com.ccloud.oa.user.vo.*;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,9 +120,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 发送短信验证码
      * @param phone
+     * @param type
      */
     @Override
-    public String sendSms(String phone) {
+    public String sendSms(String phone, Integer type) {
 
         //判断是否是手机号码
         boolean mobilePhone = AppUtils.isMobilePhone(phone);
@@ -133,12 +131,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new ApplicationException(ResultCodeEnum.PHONE_FORMAT_ERROR);
         }
 
-        //判断手机号码是否被占用
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("phone", phone);
-        User user = this.baseMapper.selectOne(wrapper);
-        if (user != null) {
-            throw new ApplicationException(ResultCodeEnum.PHONE_ALREADY_EXISTS_ERROR);
+        if (type == 0) {
+            //判断手机号码是否被占用
+            QueryWrapper<User> wrapper = new QueryWrapper<>();
+            wrapper.eq("phone", phone);
+            User user = this.baseMapper.selectOne(wrapper);
+            if (user != null) {
+                throw new ApplicationException(ResultCodeEnum.PHONE_ALREADY_EXISTS_ERROR);
+            }
         }
 
         //验证redis中存储的当前手机号获取验证码的次数
@@ -189,13 +189,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public UserInfo register(RegisterVO registerVO) {
 
         //校验验证码是否正确
-        String code = this.redisTemplate.opsForValue().get(AppConst.SMS_CODE_PREFIX + registerVO.getPhone());
-        if (StringUtils.isEmpty(code)) {
-            throw new ApplicationException(ResultCodeEnum.CODE_HAS_EXPIRED_ERROR);
-        }
-        if (!code.equalsIgnoreCase(registerVO.getCode())) {
-            throw new ApplicationException(ResultCodeEnum.CODE_UNEQUAL_ERROR);
-        }
+        String phone = registerVO.getPhone();
+        this.checkSmsCode(registerVO.getCode(), phone);
 
         //校验两次密码是否相等
         String password = registerVO.getPassword();
@@ -240,6 +235,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         userInfo.setAvatar(AppConst.DEFAULT_AVATAR_URL);
 
         return userInfo;
+    }
+
+    /**
+     * 校验验证码是否正确 - 验证码保留5分钟，验证后不删除
+     * @param webCode 传入的code
+     * @param phone redis中code
+     */
+    private void checkSmsCode(String webCode, String phone) {
+        String code = this.redisTemplate.opsForValue().get(AppConst.SMS_CODE_PREFIX + phone);
+        if (StringUtils.isEmpty(code)) {
+            throw new ApplicationException(ResultCodeEnum.CODE_HAS_EXPIRED_ERROR);
+        }
+        if (!code.equalsIgnoreCase(webCode)) {
+            throw new ApplicationException(ResultCodeEnum.CODE_UNEQUAL_ERROR);
+        }
     }
 
     /**
@@ -328,7 +338,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Override
-    public int updatePasswordByAccount(UpdatePasswordVO passwordVO) {
+    public int updatePasswordByAccount(PasswordVO passwordVO) {
 
         //获取redis中更改密码的次数
         String account = passwordVO.getAccount();
@@ -377,5 +387,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 AppConst.UPDATE_PASSWORD_EXPIRE_TIME, TimeUnit.DAYS);
 
         return i;
+    }
+
+    /**
+     * 绑定手机号
+     * @param phoneVO
+     * @return
+     */
+    @Override
+    public int bingingPhoneByAccount(PhoneVO phoneVO) {
+
+        //校验验证码
+        this.checkSmsCode(phoneVO.getOldCode(), phoneVO.getOldPhone());
+
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("account", phoneVO.getAccount());
+        User user = this.baseMapper.selectOne(wrapper);
+
+        user.setPhone(phoneVO.getOldPhone());
+
+        return this.baseMapper.updateById(user);
+    }
+
+    /**
+     * 更换手机号
+     * @param phoneVO
+     * @return
+     */
+    @Override
+    public int updatePhoneByAccount(PhoneVO phoneVO) {
+
+        //校验验证码
+        this.checkSmsCode(phoneVO.getOldCode(), phoneVO.getOldPhone());
+        this.checkSmsCode(phoneVO.getNewCode(), phoneVO.getNewPhone());
+
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("account", phoneVO.getAccount());
+        User user = this.baseMapper.selectOne(wrapper);
+
+        user.setPhone(phoneVO.getNewPhone());
+
+        return this.baseMapper.updateById(user);
     }
 }

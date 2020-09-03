@@ -11,7 +11,7 @@ import lombok.Data;
  */
 @Data
 @ApiModel("更新密码VO对象")
-public class UpdatePasswordVO {
+public class PasswordVO {
 
     @ApiModelProperty("账号")
     private String account;

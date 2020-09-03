@@ -5,10 +5,7 @@ import com.ccloud.oa.common.result.BaseResponse;
 import com.ccloud.oa.common.result.ResultCodeEnum;
 import com.ccloud.oa.user.entity.User;
 import com.ccloud.oa.user.service.UserService;
-import com.ccloud.oa.user.vo.LoginVO;
-import com.ccloud.oa.user.vo.RegisterVO;
-import com.ccloud.oa.user.vo.UpdatePasswordVO;
-import com.ccloud.oa.user.vo.UserInfo;
+import com.ccloud.oa.user.vo.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -59,8 +56,10 @@ public class UserController {
     @GetMapping("/sms")
     public BaseResponse sendSms(
             @ApiParam(name = "phone", value = "手机号码", required = true)
-            @RequestParam("phone") String phone) {
-        String message = this.userService.sendSms(phone);
+            @RequestParam("phone") String phone,
+            @ApiParam(name = "type", value = "0-注册和绑定验证码 1-更换手机的验证码", required = true)
+            @RequestParam("type") Integer type) {
+        String message = this.userService.sendSms(phone, type);
         return BaseResponse.success().message(message);
     }
 
@@ -107,7 +106,7 @@ public class UserController {
     @PostMapping("/update/password")
     public BaseResponse updatePasswordByAccount(
             @ApiParam(name = "passwordVO", value = "更新密码VO", required = true)
-            @RequestBody UpdatePasswordVO passwordVO) {
+            @RequestBody PasswordVO passwordVO) {
 
         int count = this.userService.updatePasswordByAccount(passwordVO);
 
@@ -115,6 +114,36 @@ public class UserController {
             return BaseResponse.success().message("更新密码成功");
         } else {
             return BaseResponse.error().message("更新密码失败");
+        }
+    }
+
+    @ApiOperation("绑定手机号码")
+    @PostMapping("/save/phone")
+    public BaseResponse bingingPhoneByAccount(
+            @ApiParam(name = "phoneVO", value = "更新手机号码VO", required = true)
+            @RequestBody PhoneVO phoneVO) {
+
+        int count = this.userService.bingingPhoneByAccount(phoneVO);
+
+        if (count == 1) {
+            return BaseResponse.success().message("绑定手机号码成功");
+        } else {
+            return BaseResponse.error().message("绑定手机号码失败");
+        }
+    }
+
+    @ApiOperation("更换手机号码")
+    @PostMapping("/update/phone")
+    public BaseResponse updatePhoneByAccount(
+            @ApiParam(name = "phoneVO", value = "更新手机号码VO", required = true)
+            @RequestBody PhoneVO phoneVO) {
+
+        int count = this.userService.updatePhoneByAccount(phoneVO);
+
+        if (count == 1) {
+            return BaseResponse.success().message("更换手机号码成功");
+        } else {
+            return BaseResponse.error().message("更换手机号码失败");
         }
     }
 
