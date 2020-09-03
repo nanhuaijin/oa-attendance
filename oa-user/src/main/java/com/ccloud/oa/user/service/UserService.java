@@ -23,9 +23,11 @@ public interface UserService extends IService<User> {
 
     UserInfo register(RegisterVO registerVO);
 
-    User getInfo();
+    UserInfo getInfo(String account);
 
     User checkAccountExist(String username);
 
     String sendSms(String phone);
+
+    int updateUserByAccount(UserInfo userInfo);
 }

@@ -30,6 +30,21 @@ public class AppUtils {
         return flag;
     }
 
+
+    /**
+     * 校验EMAIL格式，真为正确
+     * @param email
+     * @return true 为格式正确 false 为格式错误
+     */
+    public static boolean isEmail(String email) {
+        boolean falg = true;
+        String emailRegex = "^[a-zA-Z0-9_-]+@([a-zA-Z0-9]+\\.)+(com|cn|net|org)$";
+        if (!email.matches(emailRegex)) {
+            falg = false;
+        }
+        return falg;
+    }
+
     /**
      * 随机生成i位数字字符串
      * @param i

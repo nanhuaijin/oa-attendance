@@ -56,6 +56,9 @@ public class User extends BaseEntity {
     @ApiModelProperty(value = "生日")
     private String birthday;
 
+    @ApiModelProperty(value = "邮箱")
+    private String email;
+
     @ApiModelProperty(value = "状态 0-正常 1-删除")
     @TableLogic
     private Boolean del;

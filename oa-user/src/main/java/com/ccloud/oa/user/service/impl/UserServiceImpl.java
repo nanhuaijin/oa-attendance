@@ -241,17 +241,64 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return userInfo;
     }
 
+    /**
+     * 根据用户名或者手机号获取用户信息
+     * @param account
+     * @return
+     */
     @Override
-    public User getInfo() {
+    public UserInfo getInfo(String account) {
+        //获取用户信息
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("id", 1);
-
+        wrapper.eq("account", account);
+        wrapper.or().eq("phone", account);
         User user = this.baseMapper.selectOne(wrapper);
 
-        if (user != null) {
-            return user;
-        } else {
-            throw new ApplicationException(ResultCodeEnum.ACCOUNT_OR_PASSWORD_ERROR);
+        UserInfo userInfo = new UserInfo();
+        BeanUtils.copyProperties(user, userInfo);
+
+        //生成表单提交唯一标识
+        String updateToken = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6);
+        userInfo.setUpdateToken(updateToken);
+        this.redisTemplate.opsForValue().set(AppConst.UPDATE_TOKEN+account, updateToken, 30, TimeUnit.MINUTES);
+
+        return userInfo;
+    }
+
+    /**
+     * 更新用户信息
+     * @param userInfo
+     * @return
+     */
+    @Override
+    public int updateUserByAccount(UserInfo userInfo) {
+
+        //校验token
+        String token = this.redisTemplate.opsForValue().get(AppConst.UPDATE_TOKEN + userInfo.getAccount());
+        String updateToken = userInfo.getUpdateToken();
+        if (StringUtils.isEmpty(updateToken) || StringUtils.isEmpty(token) || !updateToken.equals(token)) {
+            throw new ApplicationException(ResultCodeEnum.UPDATE_TOKEN_EQUALS_ERROR);
         }
+
+        //删除token
+        this.redisTemplate.delete(AppConst.UPDATE_TOKEN + userInfo.getAccount());
+
+        //校验邮箱格式是否正确
+        boolean flag = AppUtils.isEmail(userInfo.getEmail());
+        if (!flag) {
+            throw new ApplicationException(ResultCodeEnum.EMAIL_FORMAT_ERROR);
+        }
+
+        //只保留年月日的时间格式
+        String birthday = userInfo.getBirthday().substring(0, 10);
+        userInfo.setBirthday(birthday);
+
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("account", userInfo.getAccount());
+
+        User user = new User();
+        BeanUtils.copyProperties(userInfo, user);
+
+        return this.baseMapper.update(user, wrapper);
     }
 }

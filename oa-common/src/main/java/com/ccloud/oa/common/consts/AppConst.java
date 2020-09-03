@@ -19,6 +19,10 @@ public interface AppConst {
      */
     Integer SMS_CODE_MAX_COUNT = 3;
     /**
+     * 防止表单重复提交token前缀
+     */
+    String UPDATE_TOKEN = "update:token:";
+    /**
      * 注册用户默认头像地址
      */
     String DEFAULT_AVATAR_URL = "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif";

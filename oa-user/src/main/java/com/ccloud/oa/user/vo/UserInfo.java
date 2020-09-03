@@ -40,4 +40,10 @@ public class UserInfo {
     @ApiModelProperty(value = "生日")
     private String birthday;
 
+    @ApiModelProperty(value = "邮箱")
+    private String email;
+
+    @ApiModelProperty(value = "防止表单重复提交token")
+    private String updateToken;
+
 }

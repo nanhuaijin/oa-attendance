@@ -35,6 +35,9 @@ public enum ResultCodeEnum {
     PHONE_FORMAT_ERROR(41007, "手机号码格式不正确"),
     CODE_HAS_EXPIRED_ERROR(41008, "验证码已过期，请重新发送"),
     CODE_UNEQUAL_ERROR(41009, "您输入的验证码不正确"),
+    UPDATE_USER_INFO_ERROR(41010, "更新用户信息失败"),
+    EMAIL_FORMAT_ERROR(41011, "邮箱格式不正确"),
+    UPDATE_TOKEN_EQUALS_ERROR(41012, "表单Token校验失败，请刷新重试"),
 
 
     REPEAT_PUNCH_CLOCK(42000, "请不要重复打卡"),

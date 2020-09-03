@@ -78,11 +78,28 @@ public class UserController {
 
     @ApiOperation("获取员工信息")
     @GetMapping("/info")
-    public BaseResponse getInfo() {
+    public BaseResponse getInfo(
+            @ApiParam(name = "account", value = "用户账号", required = true)
+            @RequestParam("account") String account) {
 
-        User user = this.userService.getInfo();
+        UserInfo userInfo = this.userService.getInfo(account);
 
-        return BaseResponse.success().data("user", user);
+        return BaseResponse.success().data("user", userInfo);
+    }
+
+    @ApiOperation("更新员工信息")
+    @PostMapping("/update")
+    public BaseResponse updateUserByAccount(
+            @ApiParam(name = "user", value = "用户对象", required = true)
+            @RequestBody UserInfo userInfo) {
+
+        int count = this.userService.updateUserByAccount(userInfo);
+
+        if (count == 1) {
+            return BaseResponse.success().message("更新用户信息成功");
+        } else {
+            return BaseResponse.setResult(ResultCodeEnum.UPDATE_USER_INFO_ERROR);
+        }
     }
 
     @ApiOperation("退出登录")
