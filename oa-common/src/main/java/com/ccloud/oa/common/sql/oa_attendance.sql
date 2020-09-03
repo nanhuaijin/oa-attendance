@@ -29,7 +29,7 @@ CREATE TABLE `oa_attendance` (
   `day` int(2) DEFAULT NULL COMMENT '日',
   `start` time DEFAULT NULL COMMENT '上班时间',
   `end` time DEFAULT NULL COMMENT '下班时间',
-  `hours` double(2,1) DEFAULT NULL COMMENT '工作时长',
+  `hours` double(3,1) DEFAULT NULL COMMENT '工作时长',
   `status` int(1) NOT NULL DEFAULT '0' COMMENT '0-正常 1-迟到 2-事假 3-病假 4-休假 默认0',
   `address_start` varchar(255) DEFAULT NULL COMMENT '上班打卡地点',
   `address_end` varchar(255) DEFAULT NULL COMMENT '下班打卡地点',

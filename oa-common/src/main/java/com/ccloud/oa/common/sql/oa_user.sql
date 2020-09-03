@@ -32,6 +32,7 @@ CREATE TABLE `oa_user` (
   `phone` char(11) DEFAULT NULL COMMENT '手机号码',
   `sex` tinyint(1) DEFAULT '0' COMMENT '性别 0-男 1-女',
   `birthday` varchar(10) DEFAULT NULL COMMENT '生日',
+  `email` varchar(255) DEFAULT NULL COMMENT '邮箱',
   `del` tinyint(1) DEFAULT '0' COMMENT '状态 0-正常 1-删除',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
