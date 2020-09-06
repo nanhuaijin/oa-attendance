@@ -8,8 +8,11 @@ import com.ccloud.oa.common.utils.DateUtils;
 import com.ccloud.oa.user.entity.Attendance;
 import com.ccloud.oa.user.mapper.AttendanceMapper;
 import com.ccloud.oa.user.service.AttendanceService;
+import com.ccloud.oa.user.vo.PercentagesVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -24,6 +27,9 @@ import java.util.List;
  */
 @Service
 public class AttendanceServiceImpl extends ServiceImpl<AttendanceMapper, Attendance> implements AttendanceService {
+
+    @Autowired
+    private AttendanceMapper attendanceMapper;
 
     /**
      * 获取当前登录人本月打卡记录
@@ -145,5 +151,61 @@ public class AttendanceServiceImpl extends ServiceImpl<AttendanceMapper, Attenda
         this.baseMapper.updateById(attendance);
 
         return attendance;
+    }
+
+    /**
+     * 获取打卡百分率
+     * @param account
+     * @return
+     */
+    @Override
+    public PercentagesVO getPercentages(String account) {
+
+        // 最终返回对象
+        PercentagesVO percentagesVO = new PercentagesVO();
+
+        //获取本周正常打卡数量
+        LocalDateTime now = LocalDateTime.now();
+        int dayOfWeek = now.getDayOfWeek().getValue();
+        LocalDateTime currWeekBegin = now.plusDays(1 - dayOfWeek);
+        Integer currWeekCount = this.attendanceMapper.getPunchClockCount(account, currWeekBegin, now);
+
+        BigDecimal percentage = this.getPercentage(currWeekCount, 7, 3);
+        percentagesVO.setCurrWeekPer(percentage);
+
+        //获取上周打卡数量
+        LocalDateTime preWeekBegin = currWeekBegin.plusDays(-7);
+        LocalDateTime preWeekEnd = currWeekBegin.plusDays(-1);
+        Integer preWeekCount = this.attendanceMapper.getPunchClockCount(account, preWeekBegin, preWeekEnd);
+        percentagesVO.setPreWeekPer(this.getPercentage(preWeekCount, 7, 3));
+
+        //获取本月
+        LocalDateTime currMonthBegin = now.withDayOfMonth(1);
+        Integer currMonthCount = this.attendanceMapper.getPunchClockCount(account, currMonthBegin, now);
+        //获取下个月一号
+        LocalDateTime nextMonth = now.withMonth(now.getMonthValue() + 1).withDayOfMonth(1);
+        LocalDateTime currMonthEnd = nextMonth.plusDays(-1);
+        percentagesVO.setCurrMonthPer(this.getPercentage(currMonthCount, currMonthEnd.getDayOfMonth(), 3));
+
+        //获取本年度的上班正常打卡数量
+        LocalDateTime currYearBegin = now.withMonth(1).withDayOfMonth(1);
+        LocalDateTime currYearEnd = now.withMonth(12).withDayOfMonth(31);
+        Integer currYearCount = this.attendanceMapper.getPunchClockCount(account, currYearBegin, currYearEnd);
+        percentagesVO.setCurrYearPer(this.getPercentage(currYearCount, currYearEnd.getDayOfYear(), 3));
+
+        return percentagesVO;
+    }
+
+    /**
+     * 获取百分率
+     * @param v1 除数
+     * @param v2 被除数
+     * @param scale 保留几位小数
+     * @return
+     */
+    private BigDecimal getPercentage(Integer v1, Integer v2, Integer scale) {
+        return BigDecimal.valueOf(v1)
+                .divide(BigDecimal.valueOf(v2), scale, BigDecimal.ROUND_HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
     }
 }

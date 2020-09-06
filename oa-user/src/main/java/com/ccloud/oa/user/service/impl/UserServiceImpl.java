@@ -268,6 +268,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         UserInfo userInfo = new UserInfo();
         BeanUtils.copyProperties(user, userInfo);
 
+        //使用异步编排 - 查询用户角色权限和用户头像
+        CompletableFuture<Void> avatarFuture = CompletableFuture.runAsync(() -> {
+            Avatar avatar = this.avatarService.getAvatarByAccount(user.getAccount());
+            userInfo.setAvatar(avatar.getAvatar());
+        }, threadPool);
+
+        CompletableFuture<Void> roleFuture = CompletableFuture.runAsync(() -> {
+            Role role = this.roleMapper.selectById(user.getRoleId());
+            userInfo.setRole(role.getRole());
+            userInfo.setAuth(role.getAuth());
+        }, threadPool);
+
+        //等待异步结果返回
+        CompletableFuture.allOf(avatarFuture, roleFuture).join();
+
         //生成表单提交唯一标识 - 防止重复提交
         String updateToken = this.getToken(account);
         userInfo.setUpdateToken(updateToken);

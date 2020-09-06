@@ -43,7 +43,7 @@ CREATE TABLE `oa_user` (
 -- Records of oa_user
 -- ----------------------------
 BEGIN;
-INSERT INTO `oa_user` VALUES (1, 1, 'admin', '!#/)zW��C�JJ��d0cddede84c444a23a3831f576a68350', '0864bc45d7', 'admin', 'admin', '12345678901', 0, '2020-01-01', 0, '2020-08-27 12:14:16', '2020-08-27 12:14:16');
+INSERT INTO `oa_user` VALUES (1, 1, 'admin', '!#/)zW��C�JJ��d0cddede84c444a23a3831f576a68350', '0864bc45d7', 'admin', 'admin', '12345678901', 0, '2020-01-01','admin@ccloud.com', 0, '2020-08-27 12:14:16', '2020-08-27 12:14:16');
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

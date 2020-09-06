@@ -3,6 +3,7 @@ package com.ccloud.oa.user.controller;
 import com.ccloud.oa.common.result.BaseResponse;
 import com.ccloud.oa.user.entity.Attendance;
 import com.ccloud.oa.user.service.AttendanceService;
+import com.ccloud.oa.user.vo.PercentagesVO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,5 +88,15 @@ public class AttendanceController {
         Attendance attendance = this.attendanceService.punchClockLower(account, address);
 
         return BaseResponse.success().data("attendance", attendance).message("打卡成功");
+    }
+
+    @ApiOperation("获取打卡百分率")
+    @GetMapping("/get/percentages")
+    public BaseResponse getPercentages(
+            @ApiParam(name = "account", value = "用户账号", required = true)
+            @RequestParam("account") String account) {
+        PercentagesVO percentages = this.attendanceService.getPercentages(account);
+
+        return BaseResponse.success().data("percentages", percentages).message("获取打卡百分率成功");
     }
 }

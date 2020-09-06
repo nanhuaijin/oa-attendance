@@ -2,6 +2,7 @@ package com.ccloud.oa.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ccloud.oa.user.entity.Attendance;
+import com.ccloud.oa.user.vo.PercentagesVO;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface AttendanceService extends IService<Attendance> {
     List<Attendance> listCalendarDataByAccount(String account);
 
     Attendance getCalendarDataByDay(String account, Integer year, Integer month, Integer day);
+
+    PercentagesVO getPercentages(String account);
 }

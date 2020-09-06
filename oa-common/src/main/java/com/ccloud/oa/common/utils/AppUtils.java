@@ -1,5 +1,8 @@
 package com.ccloud.oa.common.utils;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,5 +61,15 @@ public class AppUtils {
             code.append(intArr[index]);
         }
         return code.toString();
+    }
+
+    /**
+     * LocalDateTime转换Date
+     *
+     * @param localDateTime
+     * @return
+     */
+    public static Date getDateFromLocalDateTime(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
